@@ -6,7 +6,7 @@ This is a measurement paper whose central methodological claim depends on a **pr
 
 ## Critical path (in order)
 
-1. **Pin Hugging Face revisions to commit SHAs.** `05_experiment.py` `DEFAULT_MODELS`, the judge constants, and the dataset specs currently use `main`, which does **not** pin weights. Resolve each to a SHA and fill the `TODO-pin-sha` cells in `08_preregistration.md` §2. *(Blocks pre-registration.)*
+1. ✅ **Pin Hugging Face revisions to commit SHAs.** Done — `pin_revisions.py` resolved all 11 repositories; the SHAs are pasted into `05_experiment.py` (`DEFAULT_MODELS`, judge constants, dataset specs) and the `08_preregistration.md` §2 tables. *(Still to pin separately: the GCG-suffix snapshot URL + SHA-256, which is not a Hugging Face repo.)*
 2. **Freeze the pre-registration** (`08_preregistration.md`): commit it and GPG-sign a Git tag in the public repo, and post the protocol as arXiv v1; record the tag name + commit SHA + arXiv ID into paper §5.7 and Appendix I. *(Blocks the "pre-registered" framing in the abstract/§1.)*
 3. **Run the grid** (≈18 GPU-hours). **← compute-blocked; this is the only GPU-bound step.** Currently deferred while another experiment uses the GPU.
 4. **Fill Section 6.** Replace every `TBD-after-running-experiment` cell with `06_analysis.py` output; write the result prose around the real numbers (~1,500 words; the draft is ~1.5k under the 11k-word / 14-page FAccT target, almost entirely because §6 is placeholdered).

@@ -82,10 +82,10 @@ from tqdm import tqdm
 # a release tag; bare "main" is documented but discouraged because it does
 # not pin the weights.
 DEFAULT_MODELS: Tuple[Tuple[str, str], ...] = (
-    ("meta-llama/Llama-3.2-3B-Instruct", "main"),
-    ("microsoft/Phi-3-mini-4k-instruct", "main"),
-    ("Qwen/Qwen2.5-3B-Instruct", "main"),
-    ("google/gemma-2-2b-it", "main"),
+    ("meta-llama/Llama-3.2-3B-Instruct", "0cb88a4f764b7a12671c53f0838cd831a0843b95"),
+    ("microsoft/Phi-3-mini-4k-instruct", "f39ac1d28e925b323eae81227eaba4464caced4e"),
+    ("Qwen/Qwen2.5-3B-Instruct", "aa8e72537993ba99e69dfaafa59ed015b17504d1"),
+    ("google/gemma-2-2b-it", "299a8560bedf22ed1c72a8a11e7dce4a7f9f51f8"),
 )
 
 DEFAULT_OUTPUT_DIR: str = "./results"
@@ -133,13 +133,13 @@ REFUSAL_KEYWORDS: Tuple[str, ...] = (
 
 # Llama-Guard judge model.
 LLAMAGUARD_MODEL_ID: str = "meta-llama/Llama-Guard-3-1B"
-LLAMAGUARD_REVISION: str = "main"
+LLAMAGUARD_REVISION: str = "acf7aafa60f0410f8f42b1fa35e077d705892029"
 
 # HarmBench fine-tuned classifier. Primary is the Llama-2-13B classifier;
 # the smaller Mistral-7B classifier is loaded automatically when the 13B
 # variant cannot fit at 4-bit on the available GPU.
-HARMBENCH_CLS_LARGE: Tuple[str, str] = ("cais/HarmBench-Llama-2-13b-cls", "main")
-HARMBENCH_CLS_SMALL: Tuple[str, str] = ("cais/HarmBench-Mistral-7b-val-cls", "main")
+HARMBENCH_CLS_LARGE: Tuple[str, str] = ("cais/HarmBench-Llama-2-13b-cls", "bda705349d1144fa618770bea64d99ce54e3835b")
+HARMBENCH_CLS_SMALL: Tuple[str, str] = ("cais/HarmBench-Mistral-7b-val-cls", "51182c7cdaf9b2e5f05b745b81b047b67e7384a1")
 
 # HarmBench Llama-2 classifier prompt template, verbatim from the HarmBench
 # repository. The "{behavior}" and "{generation}" slots are filled in at
@@ -171,19 +171,19 @@ HARMBENCH_LLAMA2_CLS_PROMPT = (
 
 # Benchmarks. Each spec is (repo_id, config_name, split, revision).
 HARMBENCH_DATASETS: Tuple[Tuple[str, Optional[str], str, Optional[str]], ...] = (
-    ("walledai/HarmBench", "standard", "train", None),
+    ("walledai/HarmBench", "standard", "train", "fb6c2afd5a2a943d701d6db3efab87d077e81be5"),
 )
 
 XSTEST_DATASETS: Tuple[Tuple[str, Optional[str], str, Optional[str]], ...] = (
-    ("natolambert/xstest-v2-copy", None, "prompts", None),
+    ("natolambert/xstest-v2-copy", None, "prompts", "b71afe2a6d10e5a6254ea8bcb006c48b095a15d5"),
 )
 
 # JailbreakBench (cross-check) and OR-Bench-Hard (secondary FRR).
 JBB_DATASETS: Tuple[Tuple[str, Optional[str], str, Optional[str]], ...] = (
-    ("JailbreakBench/JBB-Behaviors", "behaviors", "harmful", None),
+    ("JailbreakBench/JBB-Behaviors", "behaviors", "harmful", "886acc352a31533ffbcf4ef22c744658688086fc"),
 )
 ORBENCH_DATASETS: Tuple[Tuple[str, Optional[str], str, Optional[str]], ...] = (
-    ("bench-llm/or-bench", "or-bench-hard-1k", "train", None),
+    ("bench-llm/or-bench", "or-bench-hard-1k", "train", "e36d8b80e81837c8a8f264bbb2a49f1b32c7e272"),
 )
 
 # GCG suffix artifact path. The CLI exposes --gcg-suffix-file pointing at a

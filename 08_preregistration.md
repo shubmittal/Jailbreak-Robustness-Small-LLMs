@@ -35,17 +35,17 @@ Revisions are pinned to commit SHAs at registration time. **Replace each `main` 
 
 | Model | repo_id | revision (SHA) |
 | --- | --- | --- |
-| Llama-3.2-3B-Instruct | `meta-llama/Llama-3.2-3B-Instruct` | `TODO-pin-sha` |
-| Phi-3-mini-4k-instruct | `microsoft/Phi-3-mini-4k-instruct` | `TODO-pin-sha` |
-| Qwen2.5-3B-Instruct | `Qwen/Qwen2.5-3B-Instruct` | `TODO-pin-sha` |
-| Gemma-2-2B-it | `google/gemma-2-2b-it` | `TODO-pin-sha` |
+| Llama-3.2-3B-Instruct | `meta-llama/Llama-3.2-3B-Instruct` | `0cb88a4f764b7a12671c53f0838cd831a0843b95` |
+| Phi-3-mini-4k-instruct | `microsoft/Phi-3-mini-4k-instruct` | `f39ac1d28e925b323eae81227eaba4464caced4e` |
+| Qwen2.5-3B-Instruct | `Qwen/Qwen2.5-3B-Instruct` | `aa8e72537993ba99e69dfaafa59ed015b17504d1` |
+| Gemma-2-2B-it | `google/gemma-2-2b-it` | `299a8560bedf22ed1c72a8a11e7dce4a7f9f51f8` |
 
 ### 2.2 Judges
 | Judge | repo_id | revision (SHA) | Role |
 | --- | --- | --- | --- |
-| HarmBench classifier (primary) | `cais/HarmBench-Llama-2-13b-cls` | `TODO-pin-sha` | ASR |
-| HarmBench classifier (fallback) | `cais/HarmBench-Mistral-7b-val-cls` | `TODO-pin-sha` | ASR, when 13B does not fit at 4-bit |
-| Llama-Guard-3-1B | `meta-llama/Llama-Guard-3-1B` | `TODO-pin-sha` | ASR + FRR |
+| HarmBench classifier (primary) | `cais/HarmBench-Llama-2-13b-cls` | `bda705349d1144fa618770bea64d99ce54e3835b` | ASR |
+| HarmBench classifier (fallback) | `cais/HarmBench-Mistral-7b-val-cls` | `51182c7cdaf9b2e5f05b745b81b047b67e7384a1` | ASR, when 13B does not fit at 4-bit |
+| Llama-Guard-3-1B | `meta-llama/Llama-Guard-3-1B` | `acf7aafa60f0410f8f42b1fa35e077d705892029` | ASR + FRR |
 | Keyword baseline | (in-repo wordlist, see §2.5) | n/a | ASR + FRR |
 
 The keyword wordlist is the `REFUSAL_KEYWORDS` tuple in `05_experiment.py`; a verbatim copy is included in the tagged registration commit.
@@ -53,10 +53,10 @@ The keyword wordlist is the `REFUSAL_KEYWORDS` tuple in `05_experiment.py`; a ve
 ### 2.3 Benchmarks (`(repo_id, config, split, revision)`)
 | Benchmark | spec | n | revision (SHA) |
 | --- | --- | --- | --- |
-| HarmBench standard | `walledai/HarmBench` / `standard` / `train` | 200 | `TODO-pin-sha` |
-| XSTest (safe) | `natolambert/xstest-v2-copy` / `prompts` | 250 | `TODO-pin-sha` |
-| OR-Bench-Hard | `bench-llm/or-bench` / `or-bench-hard-1k` / `train` | 1319 | `TODO-pin-sha` |
-| JBB-Behaviors | `JailbreakBench/JBB-Behaviors` / `behaviors` / `harmful` | 50 | `TODO-pin-sha` |
+| HarmBench standard | `walledai/HarmBench` / `standard` / `train` | 200 | `fb6c2afd5a2a943d701d6db3efab87d077e81be5` |
+| XSTest (safe) | `natolambert/xstest-v2-copy` / `prompts` | 250 | `b71afe2a6d10e5a6254ea8bcb006c48b095a15d5` |
+| OR-Bench-Hard | `bench-llm/or-bench` / `or-bench-hard-1k` / `train` | 1319 | `e36d8b80e81837c8a8f264bbb2a49f1b32c7e272` |
+| JBB-Behaviors | `JailbreakBench/JBB-Behaviors` / `behaviors` / `harmful` | 50 | `886acc352a31533ffbcf4ef22c744658688086fc` |
 | GCG suffixes | public `llm-attacks` snapshot (loaded at runtime; never inlined) | 10 | snapshot URL + SHA-256 |
 
 ### 2.4 Defensive prompts (SHA-256 of the UTF-8 file content, stripped)
@@ -118,7 +118,7 @@ The author is at Microsoft Responsible AI; Phi-3 is a Microsoft model. Pre-commi
 
 ## 7. Pre-freeze checklist
 
-- [ ] Resolve all `TODO-pin-sha` model / judge / dataset revisions to commit SHAs in `05_experiment.py` and in §2 tables above.
+- [x] Resolve all model / judge / dataset revisions to commit SHAs in `05_experiment.py` and in §2 tables above. *(Done via `pin_revisions.py`; raw output in `revisions.json`.)*
 - [ ] Record the GCG-suffix snapshot URL + SHA-256.
 - [ ] Place the repo under Git and record the signed registration tag name + commit SHA (§2.6).
 - [ ] Confirm the three defensive-prompt SHA-256 values above still match (`python -c "import hashlib;..."`) after any whitespace edit.
