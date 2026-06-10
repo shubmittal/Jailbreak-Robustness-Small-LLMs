@@ -4,7 +4,7 @@
 
 **Author.** shmitt@microsoft.com (Microsoft Responsible AI).
 
-**Registration type.** Pre-registration of a confirmatory measurement study. This document is committed and tagged in the public repository and posted as an arXiv v1 of the protocol **before any main experimental run**, giving an independent, author-uncontrolled public timestamp. That timestamp must demonstrably precede data collection. If, for any reason, the timestamp does not precede data collection, the abstract and Section 1 of the paper are rewritten to phrase H1–H3 as hypotheses *tested* rather than findings *established* (this contingency is also stated in paper §5.7).
+**Registration type.** Pre-registration of a confirmatory measurement study. This document is committed and tagged in the public repository **before any main experimental run**, giving an independent, author-uncontrolled public timestamp; an arXiv preprint of the full paper follows once results are in. That timestamp must demonstrably precede data collection. If, for any reason, the timestamp does not precede data collection, the abstract and Section 1 of the paper are rewritten to phrase H1–H3 as hypotheses *tested* rather than findings *established* (this contingency is also stated in paper §5.7).
 
 **Target venue.** arXiv preprint → ACM FAccT 2027 (IEEE Transactions on AI fallback).
 
@@ -122,5 +122,5 @@ The author is at Microsoft Responsible AI; Phi-3 is a Microsoft model. Pre-commi
 - [ ] Record the GCG-suffix snapshot URL + SHA-256.
 - [ ] Place the repo under Git and record the registration tag name + commit SHA (§2.6).
 - [ ] Confirm the three defensive-prompt SHA-256 values above still match (`python -c "import hashlib;..."`) after any whitespace edit.
-- [ ] Commit the frozen protocol and create a Git tag in the public repo; post the protocol as arXiv v1; record the tag name, commit SHA, and arXiv ID into paper §5.7 and Appendix I.
-- [ ] Verify the tag / arXiv-v1 timestamp precedes the first `run_manifest.json` timestamp.
+- [ ] Commit the frozen protocol and create + push a Git tag in the public repo (the registration timestamp); record the tag name and commit SHA into paper §5.7 and Appendix I. The full-paper arXiv preprint follows once results are in.
+- [ ] Verify the Git-tag push timestamp precedes the first `run_manifest.json` timestamp.
