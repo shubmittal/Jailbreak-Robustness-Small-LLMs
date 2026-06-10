@@ -1,0 +1,11 @@
+# Normalize all text files to LF in the repository and on checkout, so the
+# harness, shell scripts, and prompt hashes are byte-identical across platforms.
+* text=auto eol=lf
+
+# Shell scripts must stay LF to run on Linux.
+*.sh text eol=lf
+
+# Treat images / PDFs as binary (no line-ending conversion).
+*.png binary
+*.jpg binary
+*.pdf binary

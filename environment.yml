@@ -1,0 +1,56 @@
+# environment.yml -- conda environment for the jailbreak-robustness audit harness.
+#
+# Usage (run from the REPOSITORY ROOT so the relative requirements.txt below
+# resolves; `conda env create` resolves `-r requirements.txt` against the
+# current working directory, not against this file's location):
+#   cd Jailbreak-Robustness-Small-LLMs
+#   conda env create -f environment.yml
+#   conda activate jailbreak-audit
+#
+# Design: requirements.txt holds the canonical, paper-producing pins and is the
+# SINGLE SOURCE OF TRUTH for package versions. This file deliberately does NOT
+# repin the individual packages (transformers, torch, bitsandbytes, ...) so that
+# the two files cannot drift apart; the pip section below installs
+# `-r requirements.txt` instead. The only versions pinned HERE are the
+# toolchain (Python and CUDA), which requirements.txt does not constrain.
+#
+# IMPORTANT -- Python:
+#   This env pins python=3.11, within the README's supported 3.10-3.12 range for
+#   the canonical pins (requirements.txt itself imposes no Python constraint).
+#
+# IMPORTANT -- CUDA / PyTorch:
+#   This env pins the CUDA toolchain to 12.1 (`pytorch-cuda=12.1`, via the
+#   pytorch and nvidia channels) to match Appendix B Step 1 of the paper
+#   ("ensure CUDA 12.1 and a compatible PyTorch wheel are installed"). If conda
+#   does not resolve a CUDA-enabled torch matching the requirements.txt pin for
+#   your platform, install the CUDA-12.1-matched wheel manually from
+#   https://pytorch.org/get-started/locally/ . For the canonical
+#   requirements.txt path the torch *version* pin (torch==2.4.1) must be honored;
+#   only the CUDA build variant changes. (This does not apply to the Python 3.13
+#   path below, where requirements-loose.txt bumps torch to >=2.6.)
+#
+# IMPORTANT -- bitsandbytes / 4-bit quantization:
+#   4-bit quantization via bitsandbytes is CUDA-only. On CPU-only machines the
+#   bitsandbytes 4-bit path is unavailable; use the documented `--backend ollama`
+#   fallback in 05_experiment.py instead.
+#
+# Python 3.13 alternative:
+#   This env targets python=3.11. For a Python 3.13 setup, use
+#   requirements-loose.txt (the "minimum bound" alternative, which bumps torch to
+#   >=2.6 and bitsandbytes to >=0.45) in place of requirements.txt rather than
+#   this file.
+
+name: jailbreak-audit
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  # Minimal conda base + pinned CUDA toolchain only -- all Python packages come
+  # via pip from the canonical requirements.txt so their versions are defined in
+  # exactly one place.
+  - python=3.11
+  - pytorch-cuda=12.1
+  - pip
+  - pip:
+      - -r requirements.txt

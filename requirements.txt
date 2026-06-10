@@ -1,0 +1,24 @@
+# Dependencies for the audit harness.
+#
+# Versions are exact-pinned for reproducibility, EXCEPT the four packages whose
+# previously-pinned versions ship no Python 3.13 (cp313) wheels. Those four are
+# floored to their first cp313-compatible release so the harness installs and
+# runs on Python 3.13; see requirements-loose.txt for the fully-loosened bounds.
+#
+# NOTE: paper Section 5.2 still cites torch==2.4.1 / numpy==1.26.4 / scipy==1.13.1
+# / bitsandbytes==0.44.1 and calls them "the versions used to produce the paper's
+# numbers." Since the numbers are still TBD and the run will happen on Python 3.13,
+# update Section 5.2 (and the "used to produce" phrasing) to match this file.
+transformers==4.46.3
+datasets==3.0.1
+accelerate==0.34.2
+bitsandbytes>=0.45        # first release with Python 3.13 CUDA wheels
+torch>=2.6               # first release shipping cp313 wheels
+scikit-learn==1.5.2
+pandas==2.2.3
+matplotlib==3.9.2
+numpy>=2.1               # 1.26.4 has no cp313 wheels; 2.1 is the first
+scipy>=1.14              # first release shipping cp313 wheels
+tqdm==4.66.5
+requests==2.32.3
+cryptography==43.0.1

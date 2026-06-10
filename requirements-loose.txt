@@ -1,0 +1,21 @@
+# Loose (>=) dependency bounds. Useful for re-running the harness on
+# newer Python or CUDA toolkits, but the paper's numbers were produced
+# with the pins in requirements.txt.
+#
+# Floors below are also the minimums for Python 3.13: torch>=2.6, numpy>=2.1,
+# and scipy>=1.14 are the first releases shipping cp313 wheels, and
+# bitsandbytes>=0.45 is the first with 3.13 CUDA wheels. On Python <=3.12 the
+# older bounds in requirements.txt remain valid.
+transformers>=4.46
+datasets>=2.20
+accelerate>=0.33
+bitsandbytes>=0.45
+torch>=2.6
+scikit-learn>=1.5
+pandas>=2.0
+matplotlib>=3.7
+numpy>=2.1
+scipy>=1.14
+tqdm>=4.66
+requests>=2.31
+cryptography>=42.0
