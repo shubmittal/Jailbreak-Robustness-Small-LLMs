@@ -8,7 +8,7 @@
 
 **Target venue.** arXiv preprint → ACM FAccT 2027 (IEEE Transactions on AI fallback).
 
-> **Status: DRAFT — not yet frozen.** Two fields below are placeholders that MUST be resolved before this document is tagged and posted and the run begins: (1) the Hugging Face commit SHAs for every model, judge, and dataset (currently `main` in `05_experiment.py` `DEFAULT_MODELS` and the dataset specs — `main` does **not** pin weights); (2) the registration-time harness integrity hash. See "Frozen variables" and the checklist at the end.
+> **Status: to be frozen at tag time.** The model, judge, and dataset revisions have been pinned to commit SHAs (Section 2; resolved via `pin_revisions.py`). The remaining placeholders to fill before tagging and posting are: (1) the GCG-suffix snapshot URL + SHA-256 (§2.3); (2) the registration tag name and commit SHA (§2.6). See the checklist at the end.
 
 ---
 
@@ -22,7 +22,7 @@ These three hypotheses are registered as confirmatory. Section 6 of the paper re
 
 - **H3 (capability-vs-alignment).** Attack-family vulnerability is differentiated in interpretable ways: encoding/cipher attacks under-perform on sub-4B models because the models fail to decode the ciphers at all (a capability artifact, not alignment), while DAN-family persona attacks remain effective.
 
-**Falsification conditions.** H1 is not supported if Kendall's τ ≥ 0.5 for every judge pair under both conditions AND no pairwise flip meets the §4.6 rule. H2 is not supported if any model shows no significant ASR reduction (McNemar p ≥ 0.05) OR the max/min C(M) ratio (among models with a defined C(M)) is ≤ 2. H3 is not supported if the cipher-row ASR is not uniformly low across models, or if low cipher ASR coincides with measured cipher-decoding capability (i.e., the models *can* decode but still refuse — indicating alignment, not capability).
+**Falsification conditions.** H1 is not supported if Kendall's τ ≥ 0.5 for every judge pair under both conditions AND no pairwise flip meets the §5.7 rule. H2 is not supported if any model shows no significant ASR reduction (McNemar p ≥ 0.05) OR the max/min C(M) ratio (among models with a defined C(M)) is ≤ 2. H3 is not supported if the cipher-row ASR is not uniformly low across models, or if low cipher ASR coincides with measured cipher-decoding capability (i.e., the models *can* decode but still refuse — indicating alignment, not capability).
 
 **Exploratory (not confirmatory).** Per-category attack-family breakdowns beyond the seven HarmBench semantic categories; qualitative cipher-decoding analysis; any post-hoc judge-calibration adjustment; the placement ablation; the GCG-suffix transfer magnitude.
 
