@@ -4,13 +4,13 @@
 
 *Affiliation note.* This paper reports an independent comparative audit conducted by a Responsible AI practitioner at Microsoft. No internal or proprietary Microsoft models, datasets, evaluation tooling, or deployment systems were used. All target models, judges, and benchmark prompts are drawn from publicly released artifacts at pinned revisions.
 
-*Manuscript status.* arXiv-first preprint with planned submission to ACM FAccT 2027 and IEEE Transactions on AI as a fallback venue.
-
 ---
 
 ## Abstract
 
-Sub-4B instruction-tuned open language models — Llama-3.2-3B-Instruct, Phi-3-mini, Qwen2.5-3B-Instruct, and Gemma-2-2B-it — increasingly run on laptops, mobile devices, and air-gapped enterprise stacks. These are precisely the settings in which Responsible AI practitioners cannot rely on classifier auxiliaries, decoding-time interventions, or representation-engineering defenses. The published jailbreak-evaluation literature (HarmBench, JailbreakBench, StrongREJECT) concentrates on 7B-and-larger and frontier closed models, reports attack success rate (ASR) and false refusal rate (FRR) on separate model sets, and rarely audits the most widely deployed defense: a single natural-language system prompt. We present a reproducible, laptop-runnable comparative audit that closes three gaps at once. First, we measure ASR on a 200-behavior HarmBench standard subset together with ten canonical pre-published GCG suffixes loaded at runtime from the public Zou et al. artifact, and FRR on XSTest-250 and the OR-Bench-Hard subset, on the same four models under the same intervention. Second, we triangulate ASR across three independent judges — the HarmBench fine-tuned classifier (Llama-2-13B or, when memory is insufficient, the HarmBench Mistral-7B classifier), Llama-Guard-3-1B, and a deliberately weak keyword baseline — and report Kendall's tau ranking stability with Wilson 95% confidence intervals and B=1000 paired nonparametric bootstrap intervals on differences. Third, we quantify defense cost as the change in FRR per unit reduction in ASR for a single ~60-word defensive system prompt drawn from the self-reminder and goal-prioritization line of work, together with a robustness check that measures the area between the empty- and defensive-prompt operating points on the (ASR, FRR) plane. The primary grid completes in approximately 12 GPU-hours on a consumer 16 GB NVIDIA GPU (roughly 18 GPU-hours including replicates and ablations); a CPU-only fallback path via Ollama is documented for laptops without bitsandbytes-compatible CUDA hardware. We publicly pre-register three hypotheses before any experimental run: (H1) the safety ranking of the four models is not stable across judges; (H2) the defensive prompt reduces ASR on all four models but at per-model FRR costs whose spread is more than a factor of two; (H3) some apparent robustness on encoded prompts reflects limited decoding capability rather than alignment. We report the observed direction and magnitude of each in Section 6. We propose no new attack and no new defense. All prompts are drawn from previously published public benchmarks; no harmful completion is reproduced in the paper or release artifact; only aggregate statistics and judge labels are released, in accordance with the Microsoft Responsible AI Standard.
+Sub-4B instruction-tuned open models — Llama-3.2-3B-Instruct, Phi-3-mini, Qwen2.5-3B-Instruct, and Gemma-2-2B-it — increasingly run on laptops, phones, and air-gapped stacks, exactly where deployers cannot add classifier, decoding-time, or representation-engineering defenses. Yet the jailbreak-evaluation literature (HarmBench, JailbreakBench, StrongREJECT) concentrates on 7B-and-larger and closed models, reports attack-success rate (ASR) and false-refusal rate (FRR) on disjoint model sets, and rarely audits the one defense every deployer can apply: a single natural-language system prompt. We present a reproducible, laptop-runnable audit that closes three gaps together. (1) We measure ASR (HarmBench-200, plus ten canonical pre-published GCG suffixes) and FRR (XSTest-250 and OR-Bench-Hard) on the same four models under the same intervention. (2) We triangulate ASR across three independent judges — the HarmBench fine-tuned classifier, Llama-Guard-3-1B, and a deliberately weak keyword baseline — with Wilson 95% intervals, B=1000 paired bootstrap, and Kendall's-tau ranking stability. (3) We quantify defense cost — the FRR rise per unit of ASR reduction — for one ~60-word defensive prompt, with an area metric as a robustness check. The grid runs in ~12 GPU-hours on a 16 GB consumer GPU (~18 with ablations), with a documented CPU/Ollama fallback. We pre-register three hypotheses before any run: (H1) the safety ranking of the four models is not stable across judges; (H2) the defensive prompt reduces ASR on all four models but at per-model FRR costs whose spread is more than a factor of two; (H3) some apparent robustness on encoded prompts reflects limited decoding capability rather than alignment. We report each in Section 6. We propose no new attack or defense; all prompts are previously published, no harmful completion is reproduced, and only aggregate statistics and judge labels are released.
+
+**Keywords.** jailbreak robustness; sub-4B open language models; attack success rate (ASR); false refusal rate (FRR); over-refusal; defensive system prompts; LLM safety evaluation; judge triangulation; pre-registration; Responsible AI; on-device deployment.
 
 ---
 
@@ -125,6 +125,27 @@ Indirect prompt injection in LLM-integrated applications [@greshake2023indirect]
 ---
 
 ## 4. Methodology
+
+The evaluation pipeline is summarised below: each target model is run under both system-prompt conditions over the attack-side and benign-side prompt sets, every completion is scored by the three independent judges, and the per-prompt verdicts roll up into ASR, FRR, and the defense-cost metrics.
+
+```mermaid
+flowchart LR
+  A["HarmBench-200<br/>(attack prompts)"] --> E
+  B["XSTest-250 / OR-Bench-Hard<br/>(benign prompts)"] --> E
+  E["Each of 4 models<br/>(Llama-3.2-3B, Phi-3-mini,<br/>Qwen2.5-3B, Gemma-2-2B)<br/>x 2 conditions<br/>(empty / defensive prompt)"] --> G["Generate completion<br/>(greedy, T=0, up to 256 tokens)"]
+  G --> J1["Keyword baseline"]
+  G --> J2["Llama-Guard-3-1B"]
+  G --> J3["HarmBench classifier"]
+  J1 --> R["Per-prompt,<br/>per-judge verdicts"]
+  J2 --> R
+  J3 --> R
+  R --> M1["ASR<br/>(attack-side; 3 judges)"]
+  R --> M2["FRR<br/>(benign-side; keyword + Llama-Guard)"]
+  M1 --> O["Defense cost C(M), area A(M);<br/>ranking-flip across judges"]
+  M2 --> O
+```
+
+**Evaluation pipeline (overview).** Four sub-4B models, each under two prompt conditions (empty / defensive), are run over the attack-side (HarmBench-200) and benign-side (XSTest-250, OR-Bench-Hard) prompt sets; every completion is scored by three independent judges; ASR and FRR aggregate per (model, condition, judge) and feed the per-model defense cost C(M)/A(M) and the cross-judge ranking-flip analysis. (Typeset via the TikZ source in `figures/pipeline.tex`.)
 
 ### 4.1 Joint (ASR, FRR) frontier framing
 
