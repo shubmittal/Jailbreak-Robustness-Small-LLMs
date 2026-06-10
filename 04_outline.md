@@ -252,7 +252,7 @@
 - An opt-in encrypted-completions sink is available (`--store-completions`) for reviewer-audit purposes. Completions are written via Fernet symmetric encryption to a path inside the author's Microsoft-managed environment with documented key management, a bounded retention period, and a reviewer-access protocol. The opt-in is OFF by default; the prose, code, and pre-registration all match this behaviour.
 
 ### 5.7 Pre-registration
-- The pre-registration is committed to the public repository and marked with a signed pre-registration tag before any main experiment is run; the registration commit SHA and tag are recorded in Section 5.7 and Appendix I before submission. The registration commit/tag timestamp must demonstrably precede data collection (the first run_manifest.json); if it does not, the headline-result language in the abstract and Section 1 is rewritten to read as hypotheses tested rather than findings established.
+- The pre-registration is committed to the public repository and marked with a pre-registration tag before any main experiment is run; the registration commit SHA and tag are recorded in Section 5.7 and Appendix I before submission. The registration commit/tag timestamp must demonstrably precede data collection (the first run_manifest.json); if it does not, the headline-result language in the abstract and Section 1 is rewritten to read as hypotheses tested rather than findings established.
 - The pre-registered variables are:
   - Judge identity and version (HF commit hash) for the HarmBench classifier, Llama-Guard-3-1B, and the keyword wordlist (a verbatim copy of the wordlist is included).
   - Target model revisions (HF commit hashes).

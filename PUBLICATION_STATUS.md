@@ -2,12 +2,12 @@
 
 _Last updated: 2026-06-07. Target: arXiv preprint → ACM FAccT 2027 (IEEE TAI fallback)._
 
-This is a measurement paper whose central methodological claim depends on a **pre-registration timestamped before data collection** (a signed Git tag plus an arXiv v1 of the protocol — not OSF). The experiments have **not** been run yet, so the single most important thing is to lock the pre-registration and the revision pins **before** the GPU run starts — not after.
+This is a measurement paper whose central methodological claim depends on a **pre-registration timestamped before data collection** (a Git tag plus an arXiv v1 of the protocol — not OSF). The experiments have **not** been run yet, so the single most important thing is to lock the pre-registration and the revision pins **before** the GPU run starts — not after.
 
 ## Critical path (in order)
 
 1. ✅ **Pin Hugging Face revisions to commit SHAs.** Done — `pin_revisions.py` resolved all 11 repositories; the SHAs are pasted into `05_experiment.py` (`DEFAULT_MODELS`, judge constants, dataset specs) and the `08_preregistration.md` §2 tables. *(Still to pin separately: the GCG-suffix snapshot URL + SHA-256, which is not a Hugging Face repo.)*
-2. **Freeze the pre-registration** (`08_preregistration.md`): commit it and GPG-sign a Git tag in the public repo, and post the protocol as arXiv v1; record the tag name + commit SHA + arXiv ID into paper §5.7 and Appendix I. *(Blocks the "pre-registered" framing in the abstract/§1.)*
+2. **Freeze the pre-registration** (`08_preregistration.md`): commit and tag it in the public repo, and post the protocol as arXiv v1; record the tag name + commit SHA + arXiv ID into paper §5.7 and Appendix I. *(Blocks the "pre-registered" framing in the abstract/§1.)*
 3. **Run the grid** (≈18 GPU-hours). **← compute-blocked; this is the only GPU-bound step.** Currently deferred while another experiment uses the GPU.
 4. **Fill Section 6.** Replace every `TBD-after-running-experiment` cell with `06_analysis.py` output; write the result prose around the real numbers (~1,500 words; the draft is ~1.5k under the 11k-word / 14-page FAccT target, almost entirely because §6 is placeholdered).
 5. **Write Appendices C–I** (see below).
@@ -38,7 +38,7 @@ The paper body forward-references Appendices C–I; only A and B exist. Each is 
 ## Open decisions for the author
 
 - **HF revision SHAs** — which checkpoint date to pin (affects drift-check baseline in Appendix H).
-- **Pre-registration mechanism** — RESOLVED (2026-06-09): skip OSF; use a signed Git tag + an arXiv v1 of the protocol for an independent, author-uncontrolled timestamp.
+- **Pre-registration mechanism** — RESOLVED (2026-06-09): skip OSF; use a Git tag + an arXiv v1 of the protocol for an independent, author-uncontrolled timestamp.
 - **13B vs 7B HarmBench classifier** — confirm the 13B fits at 4-bit on the target GPU; if not, the run uses the Mistral-7B fallback and that choice is recorded in Appendix A.
 - **GCG-suffix source** — pin the exact public `llm-attacks` snapshot URL + SHA for the 10 canonical suffixes.
 

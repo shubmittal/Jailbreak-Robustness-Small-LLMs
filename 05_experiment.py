@@ -92,7 +92,7 @@ DEFAULT_OUTPUT_DIR: str = "./results"
 
 # Paths to the three pre-registered defensive prompt variants. Each file is
 # SHA-256-hashed at run start and the hash is recorded in run_manifest.json.
-# The pre-registered hashes live in the signed pre-registration tag; if a `--check-prompt-hash` argument
+# The pre-registered hashes live in the pre-registration tag; if a `--check-prompt-hash` argument
 # is supplied, the harness asserts equality and exits otherwise.
 DEFENSIVE_PROMPT_FILES: Dict[str, str] = {
     "primary": "defensive_prompts/primary.txt",
