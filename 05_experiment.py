@@ -354,6 +354,34 @@ def parse_args() -> argparse.Namespace:
             "refuses to write completions in plaintext."
         ),
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        default=True,
+        help=(
+            "ON by default. Before generating, reload any prior per-model "
+            "checkpoint in --output_dir and skip prompts already completed, so "
+            "a crash/preemption never recomputes finished work. Because "
+            "decoding is greedy (temperature 0), a resumed run is bit-identical "
+            "to an uninterrupted one. Disable with --no-resume."
+        ),
+    )
+    parser.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Disable checkpoint resume; recompute every prompt from scratch.",
+    )
+    parser.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=25,
+        help=(
+            "Flush the per-model checkpoint to --output_dir every N completed "
+            "prompts (default: 25). Point --output_dir at a Drive folder so the "
+            "checkpoint survives a full runtime reset."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -1213,9 +1241,16 @@ def evaluate_model(
     cfg: GenerationConfig,
     best_of_k: int,
     defensive_prompt: str,
+    checkpoint_path: Optional[str] = None,
+    checkpoint_every: int = 25,
+    resume: bool = True,
 ) -> List[TrialRow]:
     """Run all (condition, benchmark, prompt, judge) trials for one model."""
-    rows: List[TrialRow] = []
+    # Resume: reload any prior checkpoint for this model and skip done prompts.
+    if resume and checkpoint_path:
+        rows, done_keys = load_checkpoint_rows(checkpoint_path, model_id)
+    else:
+        rows, done_keys = [], set()
 
     work: List[Tuple[str, str, str, str]] = []
     for cond in ("no_defense", "with_defense"):
@@ -1237,8 +1272,21 @@ def evaluate_model(
     cell_total: Dict[Tuple[str, str], int] = {}
     cell_err: Dict[Tuple[str, str], int] = {}
 
+    new_since_flush = 0
+
+    def _maybe_flush(force: bool = False) -> None:
+        nonlocal new_since_flush
+        if not checkpoint_path:
+            return
+        if force or new_since_flush >= checkpoint_every:
+            write_results_atomic(rows, checkpoint_path)
+            new_since_flush = 0
+
     iterator = tqdm(work, desc=f"{model_id}", unit="prompt", leave=False)
     for cond, bench, pid, text in iterator:
+        # Skip prompts already completed in a prior (checkpointed) run.
+        if (cond, bench, pid) in done_keys:
+            continue
         messages = build_messages(text, cond, defensive_prompt)
         # Sample k completions (k=1 for greedy).
         samples: List[Tuple[str, str]] = []  # (completion, error_message)
@@ -1267,15 +1315,19 @@ def evaluate_model(
                     prompt_id=pid, judge=jud.name,
                     verdict="error", harmful=0, refused=0,
                 ))
+            done_keys.add((cond, bench, pid))
+            new_since_flush += 1
             # Enforce the per-cell error budget.
             if cell_total[cell] >= 25 and (
                 cell_err[cell] / cell_total[cell] > ERROR_RATE_BUDGET
             ):
+                _maybe_flush(force=True)  # persist progress before aborting
                 raise RuntimeError(
                     f"Per-cell generation error rate exceeded budget "
                     f"({cell_err[cell]}/{cell_total[cell]} > "
                     f"{ERROR_RATE_BUDGET}) for cell={cell}. Surface and fix."
                 )
+            _maybe_flush()
             continue
 
         for jud in judges:
@@ -1300,6 +1352,11 @@ def evaluate_model(
                 harmful=int(bool(any_harm)),
                 refused=int(bool(all_ref)),
             ))
+        done_keys.add((cond, bench, pid))
+        new_since_flush += 1
+        _maybe_flush()
+
+    _maybe_flush(force=True)  # final checkpoint for this model
     return rows
 
 
@@ -1385,6 +1442,68 @@ def write_results(rows: List[TrialRow], path: str) -> None:
     df = pd.DataFrame([r.__dict__ for r in rows])
     df.to_csv(path, index=False)
     print(f"[io] wrote {path} ({len(df)} rows)")
+
+
+def _safe_model_id(model_id: str) -> str:
+    """A filesystem-safe token for per-model checkpoint filenames."""
+    return model_id.replace("/", "__").replace(":", "__")
+
+
+def checkpoint_path_for(output_dir: str, model_id: str) -> str:
+    """Path of the per-model resume checkpoint inside output_dir."""
+    return os.path.join(output_dir, f"_checkpoint_{_safe_model_id(model_id)}.csv")
+
+
+def write_results_atomic(rows: List[TrialRow], path: str) -> None:
+    """Write rows to a temp file in the same dir, then atomically replace.
+
+    Same-directory temp + os.replace avoids leaving a half-written checkpoint
+    if the runtime is killed mid-flush (the old checkpoint stays intact).
+    """
+    df = pd.DataFrame([r.__dict__ for r in rows])
+    tmp = f"{path}.tmp"
+    df.to_csv(tmp, index=False)
+    os.replace(tmp, path)
+
+
+def load_checkpoint_rows(
+    path: str, model_id: str
+) -> Tuple[List[TrialRow], set]:
+    """Reload a per-model checkpoint as (rows, done-set).
+
+    The done-set holds (condition, benchmark, prompt_id) keys already complete
+    across all judges. Returns ([], empty set) if the file is absent or
+    unreadable, so a corrupt checkpoint degrades to a fresh run rather than
+    crashing. Rows are filtered to model_id defensively.
+    """
+    if not os.path.exists(path):
+        return [], set()
+    try:
+        df = pd.read_csv(path)
+    except Exception as exc:  # corrupt/partial file -> start clean
+        print(f"[resume] ignoring unreadable checkpoint {path}: {exc}")
+        return [], set()
+    rows: List[TrialRow] = []
+    done: set = set()
+    for rec in df.to_dict("records"):
+        if str(rec.get("model")) != model_id:
+            continue
+        rows.append(TrialRow(
+            model=str(rec["model"]),
+            condition=str(rec["condition"]),
+            benchmark=str(rec["benchmark"]),
+            prompt_id=str(rec["prompt_id"]),
+            judge=str(rec["judge"]),
+            verdict=str(rec["verdict"]),
+            harmful=int(rec["harmful"]),
+            refused=int(rec["refused"]),
+        ))
+        done.add((str(rec["condition"]), str(rec["benchmark"]),
+                  str(rec["prompt_id"])))
+    if rows:
+        print(f"[resume] loaded {len(rows)} rows / {len(done)} completed "
+              f"prompts for {model_id} from {path}")
+    return rows, done
 
 
 def write_aggregate(agg: pd.DataFrame, path: str) -> None:
@@ -1564,6 +1683,9 @@ def main() -> int:
                 cfg=cfg,
                 best_of_k=args.best_of_k,
                 defensive_prompt=defensive_text,
+                checkpoint_path=checkpoint_path_for(args.output_dir, model_id),
+                checkpoint_every=args.checkpoint_every,
+                resume=args.resume,
             )
             all_rows.extend(rows)
             write_results(all_rows, os.path.join(args.output_dir, "results.csv"))
