@@ -23,3 +23,7 @@ Thumbs.db
 
 # Caches
 .cache/
+
+# Rendered / build artifacts (regenerated from 07_paper.md)
+paper_review_draft.pdf
+_review_*.html
