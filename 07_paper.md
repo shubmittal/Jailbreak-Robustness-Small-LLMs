@@ -393,7 +393,7 @@ The floor-vs-ceiling argument and its three-part justification are stated in the
 
 ### 7.4 The defense cost is non-uniform
 
-If hypothesis H2 holds, the defense-cost spread across the four models exceeds a factor of two. The practitioner implication is direct: a single organisational safety policy across a heterogeneous open-model fleet produces differential helpfulness regressions. A model with an already-conservative alignment baseline sees a small ASR reduction and a large FRR cost; a permissive one sees a large ASR reduction and a smaller FRR cost. Neither is "right" without further context, but procurement and policy decisions need to know which is which. Such a result, to our knowledge not previously quantified for the sub-4B class, would argue for *per-model defensive prompt calibration* where deployments can support it, and at minimum for joint (ASR, FRR) monitoring where they cannot.
+If H2 holds (Section 6.4), the practitioner implication is direct: a single organisational safety policy across a heterogeneous open-model fleet produces differential helpfulness regressions. A model with an already-conservative alignment baseline sees a small ASR reduction and a large FRR cost; a permissive one sees a large ASR reduction and a smaller FRR cost. Neither is "right" without further context, but procurement and policy decisions need to know which is which. Such a result, to our knowledge not previously quantified for the sub-4B class, would argue for *per-model defensive prompt calibration* where deployments can support it, and at minimum for joint (ASR, FRR) monitoring where they cannot.
 
 ### 7.5 Judge politics
 
