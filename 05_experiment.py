@@ -1664,6 +1664,17 @@ def main() -> int:
 
     all_rows: List[TrialRow] = []
     for model_id in model_ids:
+        complete_flag = os.path.join(
+            args.output_dir, f"_complete_{_safe_model_id(model_id)}.flag")
+        # If this model already finished in a prior run, skip it WITHOUT loading
+        # the weights -- re-running "all cells" then costs nothing for done work.
+        if args.resume and os.path.exists(complete_flag):
+            prior, _ = load_checkpoint_rows(
+                checkpoint_path_for(args.output_dir, model_id), model_id)
+            all_rows.extend(prior)
+            print(f"[skip] {model_id}: already complete "
+                  f"({len(prior)} rows); not reloading the model.")
+            continue
         backend = make_backend(args)
         try:
             backend.load(model_id, revision=resolved_revisions.get(model_id, "main"))
@@ -1689,6 +1700,8 @@ def main() -> int:
             )
             all_rows.extend(rows)
             write_results(all_rows, os.path.join(args.output_dir, "results.csv"))
+            with open(complete_flag, "w") as fh:  # mark this model finished
+                fh.write("done\n")
         finally:
             backend.unload()
 
