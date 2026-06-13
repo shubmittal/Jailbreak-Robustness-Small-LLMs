@@ -31,7 +31,7 @@ A useful defense reduces ASR by more than it raises FRR. A bad defense reduces b
 
 ## Why small models matter
 
-Most published safety evaluations target models with seven billion or more parameters, or frontier closed models accessed through paid APIs. But the models that actually ship on laptops, phones, and air-gapped enterprise stacks are smaller. They run through tools like Ollama and llama.cpp. They are the substrate of on-device assistants. And in those settings, deployers rarely have access to the elaborate defensive infrastructure (auxiliary classifiers, decoding-time interventions, representation-level edits) that the published defense literature assumes. The one defense every deployer can apply is a natural-language **system prompt** — a short paragraph prepended to every conversation that tells the model how to behave. The audit gap we close is the joint measurement of safety and over-refusal on these small models under exactly that practitioner-grade defense.
+Most published safety evaluations target models with seven billion or more parameters, or frontier closed models accessed through paid APIs. But the models that actually ship on laptops, phones, and air-gapped (offline, network-isolated) enterprise stacks are smaller. They run through tools like Ollama and llama.cpp. They are the substrate of on-device assistants. And in those settings, deployers rarely have access to the elaborate defensive infrastructure (auxiliary classifiers, decoding-time interventions, representation-level edits) that the published defense literature assumes. The one defense every deployer can apply is a natural-language **system prompt** — a short paragraph prepended to every conversation that tells the model how to behave. The audit gap we close is the joint measurement of safety and over-refusal on these small models under exactly that practitioner-grade defense.
 
 ## What we measure
 
@@ -48,6 +48,16 @@ Each model output is then scored by three independent judges:
 
 We never let one judge fall back to another. We treat them as three independent measurements and report when they disagree.
 
+## What we predicted, and locked in before running
+
+A measurement study is only convincing if no one can accuse the authors of shaping the story to fit the numbers. So before running anything, we wrote down three predictions and published them with a public timestamp (a "pre-registration"). The three:
+
+1. **The rankings won't agree across judges.** Ask three different safety judges to rank the four models, and at least one pair will swap places depending on who is judging — so "which model is safest" is partly a question about the judge, not only the model.
+2. **The safety paragraph costs different models very differently.** The defensive prompt should lower attack success on all four models, but the price it charges in extra wrong refusals should vary by more than two-fold between them — meaning one company-wide safety policy lands unevenly across a mixed fleet of models.
+3. **Some "robustness" is really just incapacity.** When a small model resists an encoded attack (say, a request hidden in a cipher), it is often not because its safety training caught it, but because the model is too small to decode the trick at all — a kind of safety that will evaporate as models get more capable.
+
+Section 6 of the paper reports whether each prediction held.
+
 ## How to read the results
 
 Three habits make the results easier to interpret.
@@ -56,11 +66,11 @@ Three habits make the results easier to interpret.
 
 **Second, look across judges.** Different safety judges disagree by 10-30 percentage points on the same model output, depending on the rubric. A model that looks safest under the HarmBench classifier may not look safest under Llama-Guard. We report a statistic called Kendall's tau to summarise how stable the ranking is across judges, and we flag any case where the safest-model designation changes.
 
-**Third, look at the defensive prompt as a trade-off, not a free lunch.** Adding a safety paragraph typically reduces attack success. It also typically raises over-refusal. The interesting quantity is the ratio: how much FRR did we pay for each unit of ASR we bought? We expect this ratio to differ across models — meaning a single organisational safety policy will hit different models differently.
+**Third, look at the defensive prompt as a trade-off, not a free lunch.** Adding a safety paragraph typically reduces attack success. It also typically raises over-refusal. The interesting quantity is the ratio — how much FRR did we pay for each unit of ASR we bought? (We call this the **defense cost**.) We expect this ratio to differ across models — meaning a single organisational safety policy will hit different models differently.
 
 ## What this paper does not do
 
-The paper proposes no new attack and no new defense. It does not measure adaptive adversaries (researchers who can tailor a fresh optimisation per model). It does not cover multi-turn conversations, non-English prompts, or tool-using agents. It is an **audit**: a careful, reproducible measurement of an existing situation, on a single consumer laptop. We describe what we found and what a practitioner should do with it.
+The paper proposes no new attack and no new defense. It does not measure adaptive adversaries — experts who tailor a fresh attack to each model. Against those, these small models fall to nearly 100% attack success; that is the *ceiling*. We deliberately measure the *floor* instead: what a casual copy-paste attacker faces against the one defense every deployer can actually apply. It does not cover multi-turn conversations, non-English prompts, or tool-using agents. It is an **audit**: a careful, reproducible measurement of an existing situation, on a single consumer laptop. We describe what we found and what a practitioner should do with it.
 
 ## The bottom line
 
