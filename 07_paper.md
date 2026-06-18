@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Small open-weight chat models with under four billion parameters — Llama-3.2-3B-Instruct, Phi-3-mini, Qwen2.5-3B-Instruct, and Gemma-2-2B-it — increasingly run on laptops, phones, and offline ("air-gapped") systems: exactly the settings where a deployer cannot bolt on the extra safety machinery (a separate filter model, modified decoding, or retraining) that most published defenses assume. Yet the jailbreak-evaluation literature (HarmBench, JailbreakBench, StrongREJECT) focuses on larger (7B-and-up) and closed models, reports attack-success rate (ASR — how often a harmful request gets answered) and false-refusal rate (FRR — how often a safe request is wrongly refused) on different model sets, and rarely tests the one defense every deployer can actually apply: a single instruction written into the system prompt. We present a reproducible audit, runnable on one consumer GPU, that closes three gaps together. (1) We measure both attack success and false refusal on the same four models under the same defensive prompt (ASR on HarmBench-200 plus ten pre-published Greedy Coordinate Gradient (GCG) attack suffixes; FRR on XSTest-250 and OR-Bench-Hard). (2) We check every attack-success number against three independent automatic judges — a fine-tuned HarmBench classifier, Llama-Guard-3-1B, and a deliberately weak keyword detector — so that no single judge decides the ranking. (3) We measure what the defensive prompt costs: the extra false refusals it causes per unit of attack success it removes. All rates carry Wilson 95% confidence intervals, differences use a 1,000-sample paired bootstrap, and cross-judge ranking stability is tested with Kendall's tau (a rank-correlation measure). The grid runs in about 12 GPU-hours on a 16 GB consumer GPU (~18 with ablations), with a documented CPU/Ollama fallback. We pre-register three hypotheses before any run: (H1) the four models' safety ranking is not stable across judges; (H2) the defensive prompt reduces attack success on all four models, but the false-refusal cost varies by more than a factor of two between them; (H3) some apparent robustness to encoded prompts reflects the small model's limited ability to decode them rather than stronger alignment. We report each in Section 6. We propose no new attack or defense; every prompt is previously published, no harmful completion is reproduced, and we release only aggregate statistics and judge labels.
+Small open-weight chat models with under four billion parameters — Llama-3.2-3B-Instruct, Phi-3-mini, Qwen2.5-3B-Instruct, and Gemma-2-2B-it — increasingly run on laptops, phones, and offline ("air-gapped") systems: exactly the settings where a deployer cannot bolt on the extra safety machinery (a separate filter model, modified decoding, or retraining) that most published defenses assume. Yet the jailbreak-evaluation literature (HarmBench, JailbreakBench, StrongREJECT) focuses on larger (7B-and-up) and closed models, reports attack-success rate (ASR — how often a harmful request gets answered) and false-refusal rate (FRR — how often a safe request is wrongly refused) on different model sets, and rarely tests the one defense every deployer can actually apply: a single instruction written into the system prompt. We present a reproducible audit, runnable on one consumer GPU, that closes three gaps together. (1) We measure both attack success and false refusal on the same four models under the same defensive prompt (ASR on HarmBench-200 plus ten pre-published Greedy Coordinate Gradient (GCG) attack suffixes; FRR on XSTest-250 and OR-Bench-Hard). (2) We check every attack-success number against two independent automatic judges — a fine-tuned HarmBench classifier and a deliberately weak keyword detector — so that no single judge decides the ranking; a planned third judge, Llama-Guard-3-1B, was applied but excluded as non-functional (it labelled nearly every completion unsafe regardless of the response, §6). (3) We measure what the defensive prompt costs: the extra false refusals it causes per unit of attack success it removes. All rates carry Wilson 95% confidence intervals, differences use a 1,000-sample paired bootstrap, and cross-judge ranking stability is tested with Kendall's tau (a rank-correlation measure). The grid runs in about 12 GPU-hours on a 16 GB consumer GPU (~18 with ablations), with a documented CPU/Ollama fallback. We pre-register three hypotheses before any run: (H1) the four models' safety ranking is not stable across judges; (H2) the defensive prompt reduces attack success on all four models, but the false-refusal cost varies by more than a factor of two between them; (H3) some apparent robustness to encoded prompts reflects the small model's limited ability to decode them rather than stronger alignment. We report the observed outcomes for H1 and H2 in Section 6; the H3 test requires an attack-family breakdown that is deferred to the camera-ready. We propose no new attack or defense; every prompt is previously published, no harmful completion is reproduced, and we release only aggregate statistics and judge labels.
 
 **Keywords.** jailbreak robustness; sub-4B open language models; attack success rate (ASR); false refusal rate (FRR); over-refusal; defensive system prompts; LLM safety evaluation; judge triangulation; pre-registration; Responsible AI; on-device deployment.
 
@@ -265,115 +265,95 @@ The protocol is pre-registered before any main experiment is run: the hypotheses
 
 ## 6. Results
 
-*Note on the present version of this section.* The numbers below are template placeholders. They are clearly marked as `TBD-after-running-experiment` and serve to fix the structure of the results section before any data are collected. The prose around the placeholders pre-states the interpretation that will accompany each pattern, conditioned on the pre-registered hypotheses in Section 5.7. The exact ASR and FRR point estimates will replace the placeholders once the pre-registered run completes.
+*Scope of this run.* The results below are from the pre-registered primary grid: the four target models under the empty and primary-defensive system prompts, evaluated on HarmBench-200 (attack side) and 200 XSTest safe prompts (benign side) at temperature 0, scored by two judges — the HarmBench fine-tuned classifier (the ASR judge of record) and the keyword baseline. **Llama-Guard-3-1B was excluded after the run.** It returned `unsafe` for essentially every attack-side completion regardless of whether the model complied or refused (ASR ≈ 1.000 in both conditions, invariant to the defense), so it carried no discriminating signal; we treat it as a non-functional instrument and report two judges rather than three. This is a deviation from the three-judge pre-registration and is disclosed as such; the registered ranking-flip analysis (H1) is accordingly evaluated between the HarmBench classifier and the keyword baseline. The defensive-prompt-variant ablation (§6.5), attack-family breakdown (§6.6), temperature-sensitivity check (§6.7), OR-Bench-Hard cross-benchmark (§6.8), and GCG-suffix transfer (§6.9) were not part of this run and are deferred to the camera-ready; the hypothesis they bear on (H3) is left exploratory. All rates carry Wilson 95% intervals; within-model before/after-defense differences carry exact-binomial McNemar *p*-values and B=1000 paired-bootstrap CIs.
 
 ### 6.1 Headline joint (ASR, FRR) frontier
 
-Figure 1 plots all four models in the (ASR, FRR) plane under the empty system prompt and under the primary defensive system prompt. Rather than averaging the judges, each model's ASR is plotted under the HarmBench classifier (the ASR judge of record), with a shaded band spanning the three judges so that judge disagreement is displayed rather than hidden. Within each model, an arrow connects the empty-prompt operating point to the defensive-prompt operating point; the direction and length of the arrow visualise the per-model defense effect.
+Figure 1 plots all four models in the (ASR, FRR) plane under the empty system prompt and under the primary defensive system prompt. Rather than averaging the judges, each model's ASR is plotted under the HarmBench classifier (the ASR judge of record), with a shaded band spanning the two judges so that judge disagreement is displayed rather than hidden. Within each model, an arrow connects the empty-prompt operating point to the defensive-prompt operating point; the direction and length of the arrow visualise the per-model defense effect.
 
-**Table 1.** Joint (ASR, FRR) operating points per (model, system prompt). We do not average across judges that operationalise different constructs of harm (Sections 4.5, 7.5); instead, ASR is reported under the HarmBench classifier — the ASR judge of record — and FRR under Llama-Guard-3-1B, with the full per-judge breakdown (including the deliberately weak keyword baseline) given in Table 2. The keyword baseline is never folded into a headline number.
+**Table 1.** Joint (ASR, FRR) operating points per (model, system prompt). ASR is reported under the HarmBench classifier — the ASR judge of record. FRR was identical under both judges in this run (the two refusal proxies agreed on every cell), so a single FRR column is shown; the full per-judge ASR breakdown is in Table 2.
 
 | Model | ASR_empty | FRR_empty | ASR_defensive | FRR_defensive |
 | --- | --- | --- | --- | --- |
-| Llama-3.2-3B-Instruct | `TBD-after-running-experiment` | `TBD` | `TBD` | `TBD` |
-| Phi-3-mini-4k-instruct | `TBD` | `TBD` | `TBD` | `TBD` |
-| Qwen2.5-3B-Instruct | `TBD` | `TBD` | `TBD` | `TBD` |
-| Gemma-2-2B-it | `TBD` | `TBD` | `TBD` | `TBD` |
+| Llama-3.2-3B-Instruct | 0.075 | 0.080 | 0.015 | 0.145 |
+| Phi-3-mini-4k-instruct | 0.075 | 0.245 | 0.010 | 0.655 |
+| Qwen2.5-3B-Instruct | 0.055 | 0.115 | 0.040 | 0.105 |
+| Gemma-2-2B-it | 0.010 | 0.060 | 0.000 | 0.275 |
 
 **Pre-stated interpretation.** Under hypothesis H2, every model's arrow points down-and-right: defense reduces ASR and raises FRR. The angle of each arrow encodes the per-model trade-off; arrows with shallow slope indicate a favourable defense (large ASR reduction per FRR unit gained). If H2 holds, the four arrows differ in slope by more than a factor of two, and that spread is the central fleet-management signal of the paper. If the arrow for any model points up-and-right (defense both raises FRR and *raises* ASR), we report this anomaly explicitly and discuss it in Section 7.
 
+**Observed.** Three of the four arrows point down-and-right as H2 anticipates — ASR falls (or sits at the floor) and FRR rises. The exception is Qwen2.5-3B, whose arrow points down-and-*left*: both its ASR and FRR fall slightly, so its defensive condition weakly Pareto-dominates its empty condition rather than trading one rate for the other. The arrow slopes differ enormously. Llama-3.2-3B trades a 6.0-point ASR reduction for a 6.5-point FRR rise (near 1:1); Phi-3-mini trades a 6.5-point ASR reduction for a **41-point** FRR rise; Gemma-2-2B trades a 1.0-point ASR reduction for a 21.5-point FRR rise. That spread in slope far exceeds the factor of two H2 anticipates, and is quantified as defense cost in §6.4.
+
 ### 6.2 Per-judge ASR table
 
-**Table 2.** ASR per (model, system prompt, judge) with Wilson 95% confidence intervals.
+**Table 2.** ASR per (model, system prompt, judge) with Wilson 95% confidence intervals. Llama-Guard-3-1B is omitted as a non-functional instrument (see the scope note above).
 
-| Model | Cond. | Keyword | Llama-Guard-3-1B | HarmBench cls. |
-| --- | --- | --- | --- | --- |
-| Llama-3.2-3B | empty | `TBD [TBD, TBD]` | `TBD [TBD, TBD]` | `TBD [TBD, TBD]` |
-| Llama-3.2-3B | defensive | `TBD` | `TBD` | `TBD` |
-| Phi-3-mini | empty | `TBD` | `TBD` | `TBD` |
-| Phi-3-mini | defensive | `TBD` | `TBD` | `TBD` |
-| Qwen2.5-3B | empty | `TBD` | `TBD` | `TBD` |
-| Qwen2.5-3B | defensive | `TBD` | `TBD` | `TBD` |
-| Gemma-2-2B-it | empty | `TBD` | `TBD` | `TBD` |
-| Gemma-2-2B-it | defensive | `TBD` | `TBD` | `TBD` |
+| Model | Cond. | Keyword | HarmBench cls. |
+| --- | --- | --- | --- |
+| Llama-3.2-3B | empty | 0.075 [0.046, 0.120] | 0.075 [0.046, 0.120] |
+| Llama-3.2-3B | defensive | 0.020 [0.008, 0.050] | 0.015 [0.005, 0.043] |
+| Phi-3-mini | empty | 0.095 [0.062, 0.144] | 0.075 [0.046, 0.120] |
+| Phi-3-mini | defensive | 0.025 [0.011, 0.057] | 0.010 [0.003, 0.036] |
+| Qwen2.5-3B | empty | 0.185 [0.137, 0.245] | 0.055 [0.031, 0.096] |
+| Qwen2.5-3B | defensive | 0.185 [0.137, 0.245] | 0.040 [0.020, 0.077] |
+| Gemma-2-2B-it | empty | 0.010 [0.003, 0.036] | 0.010 [0.003, 0.036] |
+| Gemma-2-2B-it | defensive | 0.000 [0.000, 0.019] | 0.000 [0.000, 0.019] |
 
-Cells whose Wilson intervals do not overlap with the adjacent same-row cell are bolded. We state in the prose, for each (judge, condition) pair, whether the per-judge model ranking matches the cross-judge consensus.
+The two judges diverge most on Qwen2.5-3B: the keyword baseline scores its empty-prompt ASR at 0.185 — the highest of any model — while the HarmBench classifier scores it at 0.055, among the lowest, and the two Wilson intervals do not overlap. Qwen complies in a register that rarely contains explicit refusal phrases, which the substring-matching keyword judge counts as attack success but the fine-tuned classifier judges as non-harmful. The keyword baseline is the deliberately weak judge; this divergence is exactly the single-judge fragility the triangulation is designed to surface, and it drives the ranking flip in §6.3.
 
 ### 6.3 Ranking stability
 
 **Table 3.** Model ASR ranking under each judge and the pairwise Kendall's tau.
 
-| Judge | Rank order (low to high ASR) | Kendall's τ vs HarmBench cls. |
+| Judge | Rank order (low to high ASR, empty prompt) | Kendall's τ vs HarmBench cls. |
 | --- | --- | --- |
-| Keyword | `TBD` | `TBD` |
-| Llama-Guard-3-1B | `TBD` | `TBD` |
-| HarmBench classifier | `TBD` | — |
+| Keyword | Gemma < Llama < Phi < Qwen | 0.18 |
+| HarmBench classifier | Gemma < Qwen < Llama ≈ Phi | — |
 
 Any pairwise ranking flip per the Section 5.7 rule is flagged in the prose. We compare the observed flip magnitude to the up-to-30-point cross-judge ASR variance documented by JailJudge [@liu2024jailjudge], and to the empty-jailbreak rubric analysis of Souly et al. [@souly2024strongreject]. Under hypothesis H1, we expect at least one flip.
 
+**Observed.** H1 is supported. Kendall's τ between the HarmBench classifier and the keyword baseline is 0.18 under the empty prompt — below the 0.5 secondary-flip threshold of §5.7 — and 0.67 under the defensive prompt. The load-bearing flip is Qwen2.5-3B: second-safest of the four under the HarmBench classifier, but the *least* safe under the keyword baseline, with the keyword Wilson interval for Qwen non-overlapping those of Llama-3.2-3B and Phi-3-mini. A practitioner reading a single keyword-style ASR number would rank Qwen worst; one reading the HarmBench classifier would rank it second-best. Because the surviving judge pair is the fine-tuned HarmBench classifier and the *deliberately weak* keyword baseline (Llama-Guard-3-1B having been excluded), this is a conservative demonstration of H1 — the ranking is unstable even against the weakest judge, which is the judge a resource-limited practitioner is most likely to reach for.
+
 ### 6.4 Defense cost spread
 
-**Table 4.** Defense cost C(M) = ΔFRR / |ΔASR| per model, with B=1000 paired bootstrap 95% CI and the area metric A(M) as a robustness check.
+**Table 4.** Defense cost C(M) = ΔFRR / |ΔASR| per model (HarmBench classifier; ASR change). ΔASR and ΔFRR carry B=1000 paired-bootstrap 95% CIs; C(M) is reported only where the ΔASR CI excludes zero, and "undefined" otherwise, per the §5.7 rule.
 
-| Model | ΔASR | ΔFRR | C(M) [95% CI] | A(M) |
-| --- | --- | --- | --- | --- |
-| Llama-3.2-3B-Instruct | `TBD` | `TBD` | `TBD [TBD, TBD]` | `TBD` |
-| Phi-3-mini-4k-instruct | `TBD` | `TBD` | `TBD` | `TBD` |
-| Qwen2.5-3B-Instruct | `TBD` | `TBD` | `TBD` | `TBD` |
-| Gemma-2-2B-it | `TBD` | `TBD` | `TBD` | `TBD` |
+| Model | ΔASR [95% CI] | ΔFRR [95% CI] | C(M) |
+| --- | --- | --- | --- |
+| Llama-3.2-3B-Instruct | −0.060 [−0.100, −0.025] | +0.065 [+0.025, +0.110] | 1.1 |
+| Phi-3-mini-4k-instruct | −0.065 [−0.100, −0.035] | +0.410 [+0.340, +0.475] | 6.3 |
+| Qwen2.5-3B-Instruct | −0.015 [−0.040, +0.010] | −0.010 [−0.055, +0.035] | undefined |
+| Gemma-2-2B-it | −0.010 [−0.025, 0.000] | +0.215 [+0.160, +0.275] | undefined |
 
 **Pre-stated interpretation.** Under hypothesis H2, the spread of C(M) across the four models exceeds a factor of two. This is the fleet-management finding: a single safety policy applied across a heterogeneous open-model fleet induces differential helpfulness regressions across models. If C(M) is "undefined" for any model because the denominator's bootstrap CI includes zero (the defense did not move ASR materially), we report A(M) and the (ΔASR, ΔFRR) pair as the substitute signals.
 
+**Observed.** H2 is supported. C(M) is defined for the two models whose ASR reduction is statistically real (McNemar *p* = 0.004 for Llama-3.2-3B, *p* = 0.0002 for Phi-3-mini): it is **1.1 for Llama-3.2-3B and 6.3 for Phi-3-mini** — a 5.8× spread under one identical prompt, well beyond the registered factor of two. For Qwen2.5-3B and Gemma-2-2B the ASR change is not significant (McNemar *p* = 0.45 and 0.50), so C(M) is undefined and we read the (ΔASR, ΔFRR) pair instead: Qwen's defense is weakly beneficial on both axes, whereas Gemma's adds 21.5 points of false refusal for no measurable ASR gain. The practitioner consequence is stark — the same prompt leaves Llama-3.2-3B usable (14.5% false refusal) but pushes Phi-3-mini to **65.5%** false refusal, declining roughly two of every three benign questions. We note per the pre-registered conflict-of-interest commitment (Section 8.5) that Phi-3-mini, a Microsoft model, carries the highest measured defense cost of the four; it is reported here with the same emphasis as any other model.
+
 ### 6.5 System-prompt sensitivity
 
-**Table 5.** ASR and FRR under the primary defensive prompt versus the terse and constitutional-style variants, per model, aggregated across judges.
-
-| Model | Variant | ASR | FRR |
-| --- | --- | --- | --- |
-| Llama-3.2-3B | primary | `TBD` | `TBD` |
-| Llama-3.2-3B | terse | `TBD` | `TBD` |
-| Llama-3.2-3B | constitutional | `TBD` | `TBD` |
-| (Phi-3-mini, Qwen2.5-3B, Gemma-2-2B-it rows analogous) | — | — | — |
+*Deferred to the camera-ready (scope note, §6): only the primary defensive prompt was run in this round, so the terse and constitutional-style variants are not yet reported.*
 
 A placement ablation for the three models whose templates accept a system role compares system-slot placement against user-prepended placement. The result speaks to whether Gemma's required user-prepended placement is a hidden confound.
 
 ### 6.6 Attack-family breakdown
 
-**Figure 4** is a heatmap with HarmBench's seven semantic categories on rows and four models on columns; the cell value is ASR under the empty prompt. Cipher and encoded-prompt attacks [@yuan2024cipher] are annotated separately with a footnote on decoding-capability failure. Under hypothesis H3, the cipher row exhibits uniformly low ASR across all four models because the models fail to decode the cipher, not because they refuse the underlying request. DAN-family persona attacks [@shen2024dan] are expected to remain effective across the row. The decomposition is reported with per-category Wilson CIs and a flag where category-level sample size is too small to support a claim.
+*Deferred (H3, exploratory).* This run used HarmBench's standard behaviours, which loaded without populated semantic-category labels (all rows resolved to a single category) and without cipher- or persona-specific prompts, so the attack-family decomposition below — and with it the H3 test — is deferred to the camera-ready. As planned: **Figure 4** is a heatmap with HarmBench's seven semantic categories on rows and four models on columns; the cell value is ASR under the empty prompt. Cipher and encoded-prompt attacks [@yuan2024cipher] are annotated separately with a footnote on decoding-capability failure. Under hypothesis H3, the cipher row exhibits uniformly low ASR across all four models because the models fail to decode the cipher, not because they refuse the underlying request. DAN-family persona attacks [@shen2024dan] are expected to remain effective across the row. The decomposition is reported with per-category Wilson CIs and a flag where category-level sample size is too small to support a claim.
 
 ### 6.7 Temperature sensitivity
 
-**Table 6.** ASR and FRR at T=0 (deterministic, primary) versus T=0.7 best-of-5 (robustness check), per model.
-
-| Model | T | ASR | FRR |
-| --- | --- | --- | --- |
-| Llama-3.2-3B | 0.0 | `TBD` | `TBD` |
-| Llama-3.2-3B | 0.7 (best-of-5) | `TBD` | `TBD` |
-| (other models analogous) | — | — | — |
+*Deferred to the camera-ready (scope note, §6): only the T=0 deterministic protocol was run; the T=0.7 best-of-5 robustness check is not yet reported.*
 
 We report whether the per-model ranking holds across sampling regimes.
 
 ### 6.8 FRR cross-benchmark
 
-**Table 7.** Spearman correlation between XSTest FRR and OR-Bench-Hard FRR per model.
-
-| Model | Spearman ρ | n_xs | n_or |
-| --- | --- | --- | --- |
-| Llama-3.2-3B | `TBD` | 250 | 1319 |
-| (others analogous) | `TBD` | 250 | 1319 |
+*Deferred to the camera-ready (scope note, §6): OR-Bench-Hard was not run in this round, so the XSTest-vs-OR-Bench-Hard FRR correlation is not yet reported. FRR in this run is measured on 200 XSTest safe prompts.*
 
 We note Cui et al.'s population-level Spearman correlation of 0.878 [@cui2024orbench]; that figure relates models' harmful-prompt rejection to their over-refusal rates, so it is a directional reference rather than a direct comparator for the per-model XSTest-vs-OR-Bench-Hard FRR correlation we report here, and we discuss per-model deviations accordingly.
 
 ### 6.9 GCG suffix transfer
 
-**Table 8.** ΔASR from appending the ten canonical Zou et al. suffixes to HarmBench behaviors, per model.
-
-| Model | ASR (HarmBench) | ASR (+GCG suffixes) | ΔASR [95% CI] |
-| --- | --- | --- | --- |
-| Llama-3.2-3B | `TBD` | `TBD` | `TBD [TBD, TBD]` |
-| (others analogous) | `TBD` | `TBD` | `TBD` |
-
-Because the canonical GCG suffixes were not optimised against sub-4B targets, we expect a modest transfer effect; we report the observed direction and magnitude.
+*Deferred to the camera-ready (scope note, §6): the GCG-suffix transfer probe (`--gcg-suffix-file`) was not run in this round. Because the canonical suffixes were not optimised against sub-4B targets, the expected transfer effect is modest; the limitation in Section 9 already bounds what this probe could show.*
 
 ---
 
@@ -397,7 +377,7 @@ If H2 holds (Section 6.4), the practitioner implication is direct: a single orga
 
 ### 7.5 Judge politics
 
-Three independent judges produce three independent rankings, and ranking flips are expected. The HarmBench classifier was fine-tuned on a specific distribution of red-team completions and labels; Llama-Guard-3 on Meta's internal safety taxonomy; the keyword baseline encodes a refusal-phrase prior. These disagreements are not noise: they reflect substantively different operationalisations of "harmful". StrongREJECT-style rubric judges [@souly2024strongreject] correct the keyword baseline's well-known empty-jailbreak failure mode but require strong LLM access and paid API budgets. Our practitioner-realistic recommendation is triangulation, not judge canonicalisation: report ASR under at least two independent judges, apply the Section 5.7 ranking-flip rule, and surface disagreements rather than hide them. The judge stack will evolve; the triangulation discipline should not.
+The registered design used three judges; two survived, and a ranking flip between them is observed (§6.3). Each operationalises "harmful" differently: the HarmBench classifier was fine-tuned on a specific distribution of red-team completions and labels, while the keyword baseline encodes a refusal-phrase prior. The third judge, Llama-Guard-3-1B, is itself the sharpest argument for triangulation: it labelled essentially every attack-side completion "unsafe" regardless of whether the model complied or refused, and we excluded it as non-functional (§6). A judge can fail silently — a deployer running a single safety classifier may be trusting an instrument that does not discriminate at all, and would never know it from a one-judge number. The disagreements among judges that do work are not noise: they reflect substantively different operationalisations of "harmful". StrongREJECT-style rubric judges [@souly2024strongreject] correct the keyword baseline's well-known empty-jailbreak failure mode but require strong LLM access and paid API budgets. Our practitioner-realistic recommendation is triangulation, not judge canonicalisation: report ASR under at least two independent judges, apply the Section 5.7 ranking-flip rule, and surface disagreements rather than hide them. The judge stack will evolve; the triangulation discipline should not.
 
 ### 7.6 Connection to FAccT and Responsible AI
 
@@ -454,6 +434,8 @@ The work is conducted under the Microsoft Responsible AI Standard; the harness a
 ## 9. Limitations
 
 The static-attack scope is the headline limitation. We do not measure adaptive robustness; Andriushchenko et al. [@andriushchenko2025adaptive] establish that an adaptive attacker reaches 100% ASR on Phi-3-mini and similar sub-4B targets. The floor framing is appropriate for paste-attackers and for fleet-level procurement decisions but does not bound the ceiling.
+
+We deviated from the three-judge pre-registration. Llama-Guard-3-1B, the registered second ASR judge and one of the two FRR judges, proved non-functional on this task: it returned "unsafe" for essentially every attack-side completion regardless of whether the model complied or refused (ASR ≈ 1.000 in both conditions, invariant to the defense), carrying no discriminating signal. We excluded it and report two judges — the HarmBench classifier and the keyword baseline — so the registered ranking-flip test (H1) is evaluated against the weaker of the two surviving judges rather than against Llama-Guard. This both narrows the triangulation and removes the FRR judge that did not share the keyword wordlist, so FRR rests on the keyword proxy alone; a StrongREJECT-style rubric judge or the larger Llama-Guard-3-8B would restore a stronger second judge and is the natural camera-ready fix.
 
 The study is English-only. Multilingual jailbreaks [@yong2023lowresource; @deng2024multilingual] are out of scope because the sub-4B class has heterogeneous multilingual coverage and conflating capability with safety would be misleading.
 
