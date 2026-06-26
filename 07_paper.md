@@ -1,8 +1,8 @@
 # Small Models, Same Rules: A Joint Attack-Success and False-Refusal Audit of Sub-4B Open LLMs Under a Single Defensive System Prompt
 
-**Author.** shmitt@microsoft.com, Microsoft Responsible AI.
+**Authors.** Shubhra Mittal, Microsoft Responsible AI (shmitt@microsoft.com); Gaurav Naresh Mittal, Independent Researcher.
 
-*Affiliation note.* This paper reports an independent comparative audit conducted by a Responsible AI practitioner at Microsoft. No internal or proprietary Microsoft models, datasets, evaluation tooling, or deployment systems were used. All target models, judges, and benchmark prompts are drawn from publicly released artifacts at pinned revisions.
+*Affiliation note.* This paper reports an independent comparative audit. The first author is a Responsible AI practitioner at Microsoft; the second is an independent researcher. No internal or proprietary Microsoft models, datasets, evaluation tooling, or deployment systems were used. All target models, judges, and benchmark prompts are drawn from publicly released artifacts at pinned revisions.
 
 ---
 
@@ -255,7 +255,7 @@ The primary grid is 4 models × 2 system prompts × ~450 core prompts × 3 judge
 
 ### 5.6 Data handling
 
-By default, the harness persists per-prompt per-judge verdicts (one row per (model, condition, benchmark, prompt_id, judge) tuple) and aggregate statistics. Raw model completions are not written to disk. An opt-in encrypted-completions sink (`--store-completions`) is available for reviewer-audit purposes; completions are written under Fernet (an authenticated symmetric-encryption scheme) to a path inside the author's Microsoft-managed environment, with bounded retention and a documented reviewer-access protocol. The opt-in is OFF by default; the prose, code, and pre-registration all match this behaviour. The opt-in path refuses to write completions in plaintext.
+By default, the harness persists per-prompt per-judge verdicts (one row per (model, condition, benchmark, prompt_id, judge) tuple) and aggregate statistics. Raw model completions are not written to disk. An opt-in encrypted-completions sink (`--store-completions`) is available for reviewer-audit purposes; completions are written under Fernet (an authenticated symmetric-encryption scheme) to a path inside the first author's Microsoft-managed environment, with bounded retention and a documented reviewer-access protocol. The opt-in is OFF by default; the prose, code, and pre-registration all match this behaviour. The opt-in path refuses to write completions in plaintext.
 
 ### 5.7 Pre-registration
 
@@ -419,7 +419,7 @@ Ranking sub-4B models on safety risks unfairly labeling a model "unsafe" when th
 
 ### 8.5 Author conflict of interest
 
-The author is at Microsoft Responsible AI; Phi-3 is a Microsoft model. The conflict is disclosed here and in the author affiliation footnote. Mitigations are five-fold. (a) The public pre-registration of the protocol is timestamped before any data collection. (b) The defensive prompt content is identical across all four models; the placement asymmetry for Gemma-2 (whose chat template does not accept a system role) is disclosed in Section 4.4 and ablated in Section 6.5. (c) The three judges are triangulated and the ranking-flip rule is pre-registered. (d) The Microsoft Responsible AI Standard's requirement of reproducible measurement protocols for comparative claims about Microsoft models is followed. (e) **Pre-commitment.** If Phi-3-mini is the safety-frontier model under any judge, we (i) report the result with the same emphasis and confidence treatment as for any other model, (ii) explicitly attempt to find a judge or condition under which it is not, and (iii) include the negative-result attempt in the paper. The reverse pre-commitment also holds: if Phi-3-mini is the worst-performing model under any judge, we report that with the same emphasis. The pre-commitment is logged in the public pre-registration.
+The first author (S. Mittal) is at Microsoft Responsible AI; Phi-3 is a Microsoft model. The conflict is disclosed here and in the author affiliation footnote. The second author has no competing interest. Mitigations are five-fold. (a) The public pre-registration of the protocol is timestamped before any data collection. (b) The defensive prompt content is identical across all four models; the placement asymmetry for Gemma-2 (whose chat template does not accept a system role) is disclosed in Section 4.4 and ablated in Section 6.5. (c) The three judges are triangulated and the ranking-flip rule is pre-registered. (d) The Microsoft Responsible AI Standard's requirement of reproducible measurement protocols for comparative claims about Microsoft models is followed. (e) **Pre-commitment.** If Phi-3-mini is the safety-frontier model under any judge, we (i) report the result with the same emphasis and confidence treatment as for any other model, (ii) explicitly attempt to find a judge or condition under which it is not, and (iii) include the negative-result attempt in the paper. The reverse pre-commitment also holds: if Phi-3-mini is the worst-performing model under any judge, we report that with the same emphasis. The pre-commitment is logged in the public pre-registration.
 
 ### 8.6 Participant and data ethics
 
@@ -706,7 +706,7 @@ This data card follows the datasheet structure of Gebru et al. [@gebru2021datash
 
 **Distribution.**
 - The default-released files (`results.csv`, `aggregate.csv`, `run_manifest.json`, `asr_frr.png`) are distributed alongside the paper and the public Git-tagged pre-registration. They contain labels and statistics only.
-- The encrypted-completions sink is **not** distributed publicly; per Sections 5.6 and 8.2 the documented path lives inside the author's Microsoft-managed environment under a documented key-management and reviewer-access protocol, with bounded retention, and reviewers may request access via the program chairs.
+- The encrypted-completions sink is **not** distributed publicly; per Sections 5.6 and 8.2 the documented path lives inside the first author's Microsoft-managed environment under a documented key-management and reviewer-access protocol, with bounded retention, and reviewers may request access via the program chairs.
 
 **Maintenance.**
 - *Maintainer:* the corresponding author (Microsoft Responsible AI).
@@ -736,7 +736,7 @@ Following Mitchell et al. [@mitchell2019modelcards], this card documents the *ha
 - *Content handling:* the instrument never inlines harmful prompts or jailbreak strings and never persists model completions by default; raw completions are produced transiently and discarded. The opt-in, off-by-default `--store-completions` flag is the documented Fernet-encrypted sink path (Sections 5.6, 8.2); as currently wired it only records the requested sink path into `run_manifest.json` and does not itself persist completions in the present evaluation loop, and the documented writer refuses to write completions in plaintext. Released outputs are verdict labels and aggregate statistics only.
 - *Human subjects:* none (Section 8.6).
 - *Dual-use:* an ASR ranking informs both deployers and adversaries; the inverted-procurement risk is bounded in Section 8.1 because all four models, all benchmarks, and the GCG artifact are already public and the adaptive ceiling is saturated.
-- *Conflict of interest:* the author is at Microsoft Responsible AI and Phi-3 is a Microsoft model; mitigations (pre-registration before data collection, identical prompt content across models, judge triangulation, a pre-registered ranking-flip rule, and a symmetric pre-commitment) are in Section 8.5.
+- *Conflict of interest:* the first author is at Microsoft Responsible AI and Phi-3 is a Microsoft model; mitigations (pre-registration before data collection, identical prompt content across models, judge triangulation, a pre-registered ranking-flip rule, and a symmetric pre-commitment) are in Section 8.5.
 
 **Caveats and recommendations.**
 - Judge-dependence is expected; report all judges, Wilson 95% CIs, and every pre-registered ranking flip rather than a single "safest model" headline (Section 8.4).
