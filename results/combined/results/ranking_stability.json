@@ -1,0 +1,128 @@
+{
+  "condition_stability": {
+    "harmbench": {
+      "asr": {
+        "tau": 0.18257418583505536,
+        "concordant": 3,
+        "discordant": 2,
+        "n_models": 4,
+        "models": [
+          "Qwen/Qwen2.5-3B-Instruct",
+          "google/gemma-2-2b-it",
+          "meta-llama/Llama-3.2-3B-Instruct",
+          "microsoft/Phi-3-mini-4k-instruct"
+        ]
+      },
+      "frr": {
+        "tau": 0.0,
+        "concordant": 3,
+        "discordant": 3,
+        "n_models": 4,
+        "models": [
+          "Qwen/Qwen2.5-3B-Instruct",
+          "google/gemma-2-2b-it",
+          "meta-llama/Llama-3.2-3B-Instruct",
+          "microsoft/Phi-3-mini-4k-instruct"
+        ]
+      }
+    },
+    "keyword": {
+      "asr": {
+        "tau": 1.0,
+        "concordant": 6,
+        "discordant": 0,
+        "n_models": 4,
+        "models": [
+          "Qwen/Qwen2.5-3B-Instruct",
+          "google/gemma-2-2b-it",
+          "meta-llama/Llama-3.2-3B-Instruct",
+          "microsoft/Phi-3-mini-4k-instruct"
+        ]
+      },
+      "frr": {
+        "tau": 0.0,
+        "concordant": 3,
+        "discordant": 3,
+        "n_models": 4,
+        "models": [
+          "Qwen/Qwen2.5-3B-Instruct",
+          "google/gemma-2-2b-it",
+          "meta-llama/Llama-3.2-3B-Instruct",
+          "microsoft/Phi-3-mini-4k-instruct"
+        ]
+      }
+    }
+  },
+  "judge_stability": {
+    "harmbench__vs__keyword": {
+      "no_defense": {
+        "asr": {
+          "tau": 0.18257418583505536,
+          "concordant": 3,
+          "discordant": 2,
+          "n_models": 4,
+          "judges": [
+            "harmbench",
+            "keyword"
+          ],
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        },
+        "frr": {
+          "tau": 1.0,
+          "concordant": 6,
+          "discordant": 0,
+          "n_models": 4,
+          "judges": [
+            "harmbench",
+            "keyword"
+          ],
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        }
+      },
+      "with_defense": {
+        "asr": {
+          "tau": 0.6666666666666666,
+          "concordant": 5,
+          "discordant": 1,
+          "n_models": 4,
+          "judges": [
+            "harmbench",
+            "keyword"
+          ],
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        },
+        "frr": {
+          "tau": 1.0,
+          "concordant": 6,
+          "discordant": 0,
+          "n_models": 4,
+          "judges": [
+            "harmbench",
+            "keyword"
+          ],
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        }
+      }
+    }
+  }
+}

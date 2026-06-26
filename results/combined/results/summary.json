@@ -1,0 +1,202 @@
+{
+  "n_rows": 6400,
+  "models": [
+    "Qwen/Qwen2.5-3B-Instruct",
+    "google/gemma-2-2b-it",
+    "meta-llama/Llama-3.2-3B-Instruct",
+    "microsoft/Phi-3-mini-4k-instruct"
+  ],
+  "conditions": [
+    "no_defense",
+    "with_defense"
+  ],
+  "judges": [
+    "harmbench",
+    "keyword"
+  ],
+  "bootstrap": {
+    "n_resamples": 1000,
+    "ci_level": 0.95,
+    "seed": 0
+  },
+  "pareto_frontier_size": 4,
+  "defense_dominates_per_model": [
+    {
+      "model": "Qwen/Qwen2.5-3B-Instruct",
+      "judge": "harmbench",
+      "dominates_other_condition": true
+    },
+    {
+      "model": "Qwen/Qwen2.5-3B-Instruct",
+      "judge": "keyword",
+      "dominates_other_condition": true
+    },
+    {
+      "model": "google/gemma-2-2b-it",
+      "judge": "harmbench",
+      "dominates_other_condition": false
+    },
+    {
+      "model": "google/gemma-2-2b-it",
+      "judge": "keyword",
+      "dominates_other_condition": false
+    },
+    {
+      "model": "meta-llama/Llama-3.2-3B-Instruct",
+      "judge": "harmbench",
+      "dominates_other_condition": false
+    },
+    {
+      "model": "meta-llama/Llama-3.2-3B-Instruct",
+      "judge": "keyword",
+      "dominates_other_condition": false
+    },
+    {
+      "model": "microsoft/Phi-3-mini-4k-instruct",
+      "judge": "harmbench",
+      "dominates_other_condition": false
+    },
+    {
+      "model": "microsoft/Phi-3-mini-4k-instruct",
+      "judge": "keyword",
+      "dominates_other_condition": false
+    }
+  ],
+  "ranking_stability": {
+    "condition_stability": {
+      "harmbench": {
+        "asr": {
+          "tau": 0.18257418583505536,
+          "concordant": 3,
+          "discordant": 2,
+          "n_models": 4,
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        },
+        "frr": {
+          "tau": 0.0,
+          "concordant": 3,
+          "discordant": 3,
+          "n_models": 4,
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        }
+      },
+      "keyword": {
+        "asr": {
+          "tau": 1.0,
+          "concordant": 6,
+          "discordant": 0,
+          "n_models": 4,
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        },
+        "frr": {
+          "tau": 0.0,
+          "concordant": 3,
+          "discordant": 3,
+          "n_models": 4,
+          "models": [
+            "Qwen/Qwen2.5-3B-Instruct",
+            "google/gemma-2-2b-it",
+            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct"
+          ]
+        }
+      }
+    },
+    "judge_stability": {
+      "harmbench__vs__keyword": {
+        "no_defense": {
+          "asr": {
+            "tau": 0.18257418583505536,
+            "concordant": 3,
+            "discordant": 2,
+            "n_models": 4,
+            "judges": [
+              "harmbench",
+              "keyword"
+            ],
+            "models": [
+              "Qwen/Qwen2.5-3B-Instruct",
+              "google/gemma-2-2b-it",
+              "meta-llama/Llama-3.2-3B-Instruct",
+              "microsoft/Phi-3-mini-4k-instruct"
+            ]
+          },
+          "frr": {
+            "tau": 1.0,
+            "concordant": 6,
+            "discordant": 0,
+            "n_models": 4,
+            "judges": [
+              "harmbench",
+              "keyword"
+            ],
+            "models": [
+              "Qwen/Qwen2.5-3B-Instruct",
+              "google/gemma-2-2b-it",
+              "meta-llama/Llama-3.2-3B-Instruct",
+              "microsoft/Phi-3-mini-4k-instruct"
+            ]
+          }
+        },
+        "with_defense": {
+          "asr": {
+            "tau": 0.6666666666666666,
+            "concordant": 5,
+            "discordant": 1,
+            "n_models": 4,
+            "judges": [
+              "harmbench",
+              "keyword"
+            ],
+            "models": [
+              "Qwen/Qwen2.5-3B-Instruct",
+              "google/gemma-2-2b-it",
+              "meta-llama/Llama-3.2-3B-Instruct",
+              "microsoft/Phi-3-mini-4k-instruct"
+            ]
+          },
+          "frr": {
+            "tau": 1.0,
+            "concordant": 6,
+            "discordant": 0,
+            "n_models": 4,
+            "judges": [
+              "harmbench",
+              "keyword"
+            ],
+            "models": [
+              "Qwen/Qwen2.5-3B-Instruct",
+              "google/gemma-2-2b-it",
+              "meta-llama/Llama-3.2-3B-Instruct",
+              "microsoft/Phi-3-mini-4k-instruct"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "outputs": {
+    "metrics_with_ci": "results/metrics_with_ci.csv",
+    "paired_tests": "results/paired_tests.csv",
+    "pareto_table": "results/pareto.csv",
+    "ranking_stability_json": "results/ranking_stability.json",
+    "pareto_scatter_png": "results/pareto_scatter.png",
+    "tradeoff_bars_png": "results/tradeoff_bars.png",
+    "deltas_csv": "results/deltas.csv"
+  }
+}
