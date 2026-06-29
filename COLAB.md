@@ -1,10 +1,10 @@
 # Running the audit on Google Colab
 
 > **Order matters.** Run this **only after** the pre-registration is public —
-> pushed to GitHub *and* the protocol submitted to arXiv. The run writes
+> pushed to GitHub and tagged (`prereg-v1`). The run writes
 > `run_manifest.json` with a UTC timestamp, and that timestamp **must come after**
 > the registration timestamp. If the run predates registration, the pre-registered
-> claims (H1/H2/H3) must be downgraded from "findings" to "hypotheses tested"
+> claims (H1/H2) must be downgraded from "findings" to "hypotheses tested"
 > (paper §5.7). Registering first is the whole point.
 
 Use a **GPU runtime**: Runtime → Change runtime type → **T4 GPU**.
@@ -73,5 +73,5 @@ drive.mount('/content/drive')
 ---
 
 **Sanity check after the run:** open `results/*/run_manifest.json` and confirm its
-`timestamp` is **later** than your GitHub push / arXiv submission time. That single
+`timestamp` is **later** than your pre-registration tag (`prereg-v1`) push time. That single
 check is what backs the "registered before running" claim.

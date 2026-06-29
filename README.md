@@ -19,11 +19,9 @@ For each of **Llama-3.2-3B-Instruct, Phi-3-mini-4k-instruct, Qwen2.5-3B-Instruct
 | `05_experiment.py` | Evaluation harness: loads models/judges/benchmarks at pinned revisions, runs the grid, writes `results.csv` + `aggregate.csv`. |
 | `06_analysis.py` | Post-hoc analysis: Wilson CIs, paired bootstrap + McNemar, Pareto frontier, Kendall's τ ranking stability (all judge pairs), figures. |
 | `defensive_prompts/` | The three pre-registered prompts (`primary`, `terse`, `constitutional`). SHA-256-checked at run start. |
-| `08_preregistration.md` | Pre-registration (hypotheses, frozen revisions, analysis plan); Git tag + arXiv v1. Lock **before** running. |
+| `08_preregistration.md` | Pre-registration (hypotheses, frozen revisions, analysis plan); public Git tag `prereg-v1`. Lock **before** running. |
 | `07_paper.md` | Paper draft. | `references.bib` | Bibliography. |
 | `tests/` | Schema smoke test linking the harness output to the analysis input. |
-| `PUBLICATION_STATUS.md` | Current gap analysis and route to submission. |
-
 ## Hardware
 
 - **Primary:** one consumer NVIDIA GPU, 12–16 GB VRAM (RTX 4070-class). 4-bit quantization (bitsandbytes) is **CUDA-only**.
