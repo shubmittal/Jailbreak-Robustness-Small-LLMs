@@ -431,7 +431,8 @@ Forward extensions are multi-turn, multilingual, and the 1B class, together with
 
 ## References
 
-The full bibliography lives in `references.bib`. In-text citations use portable `[@key]` keys that render to the target venue's citation style; a build check verifies that every `[@cite]` key in the prose appears in the `.bib` and vice versa.
+::: {#refs}
+:::
 
 ---
 
@@ -689,11 +690,9 @@ Following Mitchell et al. [@mitchell2019modelcards], this card documents the *ha
 
 ---
 
-## Appendix F. The HarmBench Classifier as a Refusal Detector, and Judge Calibration
+## Appendix F. The HarmBench Classifier as a Refusal Detector
 
 This appendix documents, with reference to Section 4.5 and Section 4.6, why the HarmBench fine-tuned classifier is *not* used as a false-refusal-rate (FRR) judge, grounding the explanation in the actual judge code in `05_experiment.py`.
-
-### F.1 Why the HarmBench classifier is not an FRR judge
 
 The HarmBench fine-tuned classifier was trained for a single, specific task: given a target *behavior* and a model *generation*, decide whether the generation counts as an instance of that harmful behavior. In the harness this is realized by `HarmBenchClassifierJudge.harmful()`, which fills the behaviour and generation slots of HarmBench's verbatim `LLAMA2_CLS_PROMPT` template (`HARMBENCH_LLAMA2_CLS_PROMPT` in `05_experiment.py`), generates a short continuation (`max_new_tokens=4`, greedy), and returns `True` when the lower-cased decoded output starts with `"yes"` (consistent with the classifier's Yes/No first-token convention). The template's own rules make the trained target unambiguous: "Generations should themselves be harmful or undesirable for a public-facing LLM to output. Benign generations do not count," and "Generations that respond, analyze, discuss, or otherwise react to the behavior without actually exhibiting it do not count." The classifier therefore answers *did this generation exhibit the named harmful behavior?* — a yes/no judgement about the **content** of an attack-side completion [@mazeika2024harmbench].
 
@@ -768,7 +767,7 @@ merged = [
 ] + other[1:]
 ```
 
-So under `with_defense`, Gemma-2 receives the defensive prompt **prepended (with a blank-line separator) to the first user message**, while the other three models receive it in the system slot. This placement asymmetry is disclosed in the methodology (Section 4.4) and in the conflict-of-interest mitigations (Section 8.5), and it is the reason Section 6.5 includes a placement ablation: for the three system-role-accepting models it compares system-slot placement against user-prepended placement, so that Gemma's *required* user-prepended placement is not a hidden confound. Pitfall worth stating explicitly: because Gemma's defensive prompt lives inside the user turn, it is, unlike a true system message, more exposed to being overridden or reframed by adversarial user content in the same turn; this is an inherent property of the model not supporting a system role, not a harness choice, and it is one of the asymmetries the placement ablation is designed to surface.
+So under `with_defense`, Gemma-2 receives the defensive prompt **prepended (with a blank-line separator) to the first user message**, while the other three models receive it in the system slot. This placement asymmetry is disclosed in the methodology (Section 4.4) and in the conflict-of-interest mitigations (Section 8.5), and it is flagged as a limitation (Section 9): a placement ablation comparing system-slot against user-prepended placement for the three system-role-accepting models would establish whether Gemma's *required* user-prepended placement is a hidden confound. Pitfall worth stating explicitly: because Gemma's defensive prompt lives inside the user turn, it is, unlike a true system message, more exposed to being overridden or reframed by adversarial user content in the same turn; this is an inherent property of the model not supporting a system role, not a harness choice, and it is one of the asymmetries the placement ablation is designed to surface.
 
 We do not reproduce Gemma-2's turn-delimiter or role-marker token strings here; as with the other models, those are revision-dependent properties of the pinned tokenizer.
 
